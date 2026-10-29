@@ -71,3 +71,9 @@ export function prossimaRevisione(revisione, improntaAttuale) {
   if (!revisione || !Number.isInteger(revisione.numero) || !revisione.impronta) return 0;
   return revisione.impronta === improntaAttuale ? revisione.numero : revisione.numero + 1;
 }
+
+// Revisione stampata sulla bozza PDF: quella corrente, senza aumentarla
+// (l'ultima assegnata a un PDF valido, oppure 0 se non ce ne sono).
+export function revisioneCorrente(revisione) {
+  return revisione && Number.isInteger(revisione.numero) ? revisione.numero : 0;
+}

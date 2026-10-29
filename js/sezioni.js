@@ -62,7 +62,7 @@ function sezione1({ C, dati, config }) {
   return [
     gruppo(
       'Codice e revisione',
-      C.solaLettura('Codice rapporto', '', { id: 's1-codice', classe: 'codice' }),
+      C.solaLettura('Codice rapporto', '', { id: 's1-codice', classeValore: 'codice' }),
       C.testo('progressivo', 'Progressivo (NN)', {
         obbligatorio: true,
         inputmode: 'numeric',
@@ -146,7 +146,7 @@ function sezione3({ C, dati }) {
       gruppo(
         'Evento',
         C.dataOra('s3.eventoDataOra', "Data e ora dell'evento", { obbligatorio: !s3.eventoNonNota, disabilitato: s3.eventoNonNota }),
-        C.casella('s3.eventoNonNota', 'Data e ora non note'),
+        C.casella('s3.eventoNonNota', 'Non nota'),
         s3.eventoNonNota
           ? null
           : [
@@ -563,7 +563,7 @@ function sezione12({ C, dati }) {
           null,
           C.testo('s12.gasApparecchiatura', 'Apparecchiatura', { obbligatorio: true }),
           s12.gasQuantitaNonNota ? null : C.numero('s12.gasQuantita', 'Quantità', { obbligatorio: true, unita: 'kg' }),
-          C.casella('s12.gasQuantitaNonNota', 'Quantità non nota'),
+          C.casella('s12.gasQuantitaNonNota', 'Non nota'),
         )
       : null,
   ];

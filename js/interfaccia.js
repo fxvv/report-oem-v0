@@ -12,7 +12,7 @@ import { creaDocumentoPdf } from './pdf-documento.js';
 import { valida } from './validazione.js';
 import { codiceDaDati } from './codice.js';
 import { verificaPartitaIva } from './piva.js';
-import { impronta, improntaContenuto, statoFirma, prossimaRevisione } from './revisione.js';
+import { impronta, improntaContenuto, statoFirma, prossimaRevisione, revisioneCorrente } from './revisione.js';
 import { creaFileBozza, leggiFileBozza } from './bozza.js';
 import {
   OPZIONI,
@@ -267,13 +267,10 @@ function collegaEventi() {
   });
   document.addEventListener('click', gestisciClic);
 
-  // su telefono la barra in basso si nasconde mentre si scrive
-  document.addEventListener('focusin', (e) => {
-    const t = e.target;
-    const testuale = t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'file'].includes(t.type));
-    document.body.classList.toggle('in-scrittura', testuale);
-  });
-  document.addEventListener('focusout', () => document.body.classList.remove('in-scrittura'));
+  // su telefono la barra in basso si nasconde mentre la tastiera è aperta
+  document.addEventListener('focusin', aggiornaBarraConTastiera);
+  document.addEventListener('focusout', () => setTimeout(aggiornaBarraConTastiera, 0));
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', aggiornaBarraConTastiera);
 
   // salvataggio immediato quando la pagina passa in secondo piano o si chiude
   document.addEventListener('visibilitychange', () => {
@@ -299,6 +296,17 @@ function collegaEventi() {
     e.target.value = '';
     if (file) importaBozza(file);
   });
+}
+
+// La tastiera aperta riduce l'area visibile (visualViewport): solo allora la barra
+// si nasconde. Così riappare anche se la tastiera si chiude senza uscire dal campo
+// (tasto Indietro su Android).
+function aggiornaBarraConTastiera() {
+  const t = document.activeElement;
+  const testuale = !!t && (t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'file'].includes(t.type)));
+  const vv = window.visualViewport;
+  const tastiera = vv ? window.innerHeight - vv.height > 150 : true;
+  document.body.classList.toggle('in-scrittura', testuale && tastiera);
 }
 
 function applicaValore(el, daChange) {
@@ -571,9 +579,13 @@ function aggiornaOpzioniDinamiche() {
 
 function aggiornaPreposti() {
   const nomi = prepostiSuggeriti(stato.dati);
-  sostituisciFigli($('lista-preposti'), nomi.map((n) => h('option', { value: n })));
+  const firma = nomi.join('|');
+  const lista = $('lista-preposti');
+  if (lista.dataset.firma !== firma) {
+    lista.dataset.firma = firma;
+    sostituisciFigli(lista, nomi.map((n) => h('option', { value: n })));
+  }
   document.querySelectorAll('[data-suggerimenti="preposti"]').forEach((c) => {
-    const firma = nomi.join('|');
     if (c.dataset.firma === firma) return;
     c.dataset.firma = firma;
     sostituisciFigli(
@@ -921,7 +933,9 @@ async function scaricaPdf() {
     mostraAvanzamento(`Lettura delle foto (${voci.length})…`);
     const immagini = await archivio.caricaImmagini(voci.map((v) => v.foto.id));
     const improntaAttuale = improntaContenuto(dati, { conFirma: true });
-    const revisione = prossimaRevisione(dati.revisione, improntaAttuale);
+    // il PDF valido prende la revisione successiva se i dati sono cambiati;
+    // la bozza riporta la revisione corrente, senza aumentarla
+    const revisione = valido ? prossimaRevisione(dati.revisione, improntaAttuale) : revisioneCorrente(dati.revisione);
     const adesso = new Date();
     const definizione = creaDocumentoPdf(dati, {
       config: CONFIG,

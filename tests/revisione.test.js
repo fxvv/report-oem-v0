@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { impronta, jsonCanonico, improntaContenuto, statoFirma, prossimaRevisione } from '../js/revisione.js';
+import { impronta, jsonCanonico, improntaContenuto, statoFirma, prossimaRevisione, revisioneCorrente } from '../js/revisione.js';
 import { nuovaBozza } from '../js/modello.js';
 import { generatoreId } from './aiuti.js';
 
@@ -67,4 +67,13 @@ test("la firma grafica cambia l'impronta completa ma non quella usata per la dec
   bozza.s13.firma.immagine = 'data:image/png;base64,BBBB';
   assert.equal(improntaContenuto(bozza, { conFirma: false }), senza);
   assert.notEqual(improntaContenuto(bozza, { conFirma: true }), con);
+});
+
+test('bozza PDF: riporta la revisione corrente senza aumentarla', () => {
+  assert.equal(revisioneCorrente({ numero: null, impronta: '' }), 0);
+  assert.equal(revisioneCorrente({ numero: 2, impronta: 'x' }), 2);
+  // anche se i dati sono cambiati, la bozza resta alla revisione corrente
+  const revisione = { numero: 2, impronta: 'vecchia' };
+  assert.equal(prossimaRevisione(revisione, 'nuova'), 3);
+  assert.equal(revisioneCorrente(revisione), 2);
 });

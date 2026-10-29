@@ -228,7 +228,12 @@ export function creaCampi(dati, contesto = {}) {
 
   // Valore in sola lettura (codice, totali, dati di configurazione…).
   function solaLettura(etichetta, contenuto, o = {}) {
-    return h('div', { classe: `campo sola-lettura ${o.classe || ''}` }, h('span', { classe: 'etichetta' }, etichetta), h('div', { classe: 'valore', id: o.id, dataset: o.dataset }, contenuto));
+    return h(
+      'div',
+      { classe: `campo sola-lettura ${o.classe || ''}` },
+      h('span', { classe: 'etichetta' }, etichetta),
+      h('div', { classe: `valore ${o.classeValore || ''}`, id: o.id, dataset: o.dataset }, contenuto),
+    );
   }
 
   // Elenco di righe mostrate come schede, con "Aggiungi" ed "Elimina".
