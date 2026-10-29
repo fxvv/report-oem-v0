@@ -70,13 +70,19 @@ export async function avvia() {
   }
 
   let dati = null;
+  let letturaFallita = false;
   try {
     const salvata = await archivio.caricaBozza();
     if (salvata) dati = normalizzaBozza(salvata);
   } catch (errore) {
-    aggiungiAvviso('lettura', `Non è stato possibile leggere la bozza salvata (${errore.message}).`);
+    letturaFallita = true;
+    aggiungiAvviso(
+      'lettura',
+      `Non è stato possibile leggere la bozza salvata (${errore.message}). Ricarica la pagina prima di scrivere: i dati inseriti ora sostituirebbero quelli salvati.`,
+    );
   }
-  const primaApertura = !dati;
+  // una bozza illeggibile non va sovrascritta subito con una bozza vuota
+  const primaApertura = !dati && !letturaFallita;
   stato.dati = dati || nuovaBozza(new Date());
   try {
     stato.miniature = new Map(Object.entries(await archivio.caricaMiniature()));
@@ -89,6 +95,8 @@ export async function avvia() {
     await salvaOra();
     // alla prima apertura si chiede di non cancellare i dati in automatico
     archivio.richiediPersistenza();
+  } else if (letturaFallita) {
+    mostraStatoSalvataggio('Bozza salvata non leggibile', true);
   } else {
     mostraStatoSalvataggio('Dati ripristinati da questo dispositivo');
   }
