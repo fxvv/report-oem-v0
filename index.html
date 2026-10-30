@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Modulo V0 per il rapporto di intervento su impianti energetici: compilazione, firma e PDF nel browser.">
+  <title>Rapporto di intervento – Modulo V0</title>
+  <!-- icona inline: nessuna richiesta di rete per favicon.ico -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230b3d63'/%3E%3Cpath d='M9 7h11l4 4v14H9z' fill='%23fff'/%3E%3Cpath d='M12 15h9M12 19h9M12 23h6' stroke='%230b3d63' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="salta" href="#sezioni">Vai al modulo</a>
+
+  <header class="testata">
+    <div class="testata-riga">
+      <div>
+        <h1>Rapporto di intervento</h1>
+        <p class="sottotitolo">Modulo V0 – compilazione da telefono o PC</p>
+      </div>
+      <button type="button" class="pulsante-menu" data-azione="apri-menu" aria-haspopup="dialog">Menu</button>
+    </div>
+  </header>
+
+  <div id="avvisi" class="avvisi"></div>
+
+  <section class="riepilogo-testata" aria-label="Dati del rapporto">
+    <dl class="dati-rapporto">
+      <div><dt>Codice rapporto</dt><dd id="codice-rapporto" class="codice">…</dd></div>
+      <div><dt>Revisione</dt><dd id="revisione-rapporto">…</dd></div>
+    </dl>
+    <dl id="dati-impianto" class="dati-config"></dl>
+  </section>
+
+  <main id="sezioni" class="sezioni" tabindex="-1">
+    <noscript>
+      <p class="avviso-rosso">Per usare il modulo serve JavaScript attivo nel browser.</p>
+    </noscript>
+  </main>
+
+  <footer class="barra" aria-label="Salvataggio e PDF">
+    <p id="stato-salvataggio" class="stato-salvataggio" aria-live="polite">Caricamento…</p>
+    <div class="barra-pulsanti">
+      <button type="button" id="pulsante-verifica" class="secondario" data-azione="verifica">Verifica <span id="conteggio-verifica" class="conteggio"></span></button>
+      <button type="button" id="pulsante-pdf" class="primario" data-azione="scarica-pdf">Scarica PDF</button>
+    </div>
+  </footer>
+
+  <!-- scelta dei file: niente attributo capture, così si può usare fotocamera o galleria -->
+  <input type="file" id="input-foto" class="nascosto-visivamente" accept="image/*" multiple tabindex="-1" aria-hidden="true">
+  <input type="file" id="input-bozza" class="nascosto-visivamente" tabindex="-1" aria-hidden="true">
+
+  <script nomodule>
+    document.body.innerHTML = '<p style="padding:16px;font:16px sans-serif">Questo browser non è supportato: usa una versione recente di Safari, Chrome, Edge o Firefox.</p>';
+  </script>
+</body>
+</html>

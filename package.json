@@ -1,0 +1,9 @@
+{
+  "name": "report-oem-v0",
+  "private": true,
+  "description": "V0 del modulo web statico per i rapporti di intervento. Nessuna dipendenza: questo file serve solo a far leggere a Node i file .js come moduli ES (test con node --test).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
