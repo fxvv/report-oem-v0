@@ -13,6 +13,8 @@
 
 Il modulo ha 13 sezioni (identificazione, inquadramento, evento e tempi, riarmo, squadra e mezzi, sicurezza, constatazione, registro operazioni, misure, componenti, esito, ESG, foto/allegati/firma). «Verifica» elenca i campi mancanti o non validi; «Scarica PDF» genera il PDF valido solo se la verifica non trova errori, altrimenti offre la bozza PDF con la filigrana «BOZZA – NON VALIDA».
 
+La specifica da cui è nata la V0 è in [`SPEC_V0.md`](SPEC_V0.md), così come è stata consegnata: è il punto di partenza per le versioni successive.
+
 ## Pubblicazione su GitHub Pages
 
 1. Unisci il ramo di lavoro in `main`.
@@ -84,6 +86,7 @@ export const CONFIG = Object.freeze({
 | `strumenti/genera-bozza-esempio.js` | rigenera la bozza di esempio |
 | `vendor/` | librerie copiate nel repository, con le licenze in `vendor/LICENSES/` |
 | `TEST.md` | collaudo manuale su iPhone e Android |
+| `SPEC_V0.md` | specifica della V0, così come è stata consegnata |
 
 ## Test
 
