@@ -34,9 +34,10 @@ import {
   prepostiSuggeriti,
 } from './modello.js';
 import { contenutoSezione, opzioniComponenti, opzioniStrumenti, testoConfigEvidenziato, CONSIGLIO_ESPORTA } from './sezioni.js';
+import { datiImpiantoCommittente } from './anagrafica.js';
 import { dataOraIt, dataOraIsoLocale, oraItDaDate, numeroIt, nomeFilePdf, nomeFileBozza, eerIt, eerValido } from './formati.js';
 
-export const VERSIONE_SOFTWARE = 'V0 – versione del 29/10/2026';
+export const VERSIONE_SOFTWARE = 'V0 – versione del 30/10/2026 (impianto e committente nel modulo)';
 
 const RITARDO_SALVATAGGIO = 500;
 const RITARDO_AGGIORNAMENTO = 150;
@@ -157,20 +158,19 @@ function costruisciPagina() {
     h('datalist', { id: 'lista-preposti' }),
   );
 
-  // dati di testata in sola lettura
-  const voci = [
-    ['Impianto', [CONFIG.codiceImpianto, ' – ', testoConfigEvidenziato(CONFIG, 'nomeImpianto')]],
-    ['Tipologia', testoConfigEvidenziato(CONFIG, 'tipologiaImpianto')],
-    String(CONFIG.potenzaKwp || '').trim() ? ['Potenza (kWp)', testoConfigEvidenziato(CONFIG, 'potenzaKwp')] : null,
-    ['Ubicazione', testoConfigEvidenziato(CONFIG, 'ubicazione')],
-    ['Coordinate', testoConfigEvidenziato(CONFIG, 'coordinate')],
-    ['Committente', testoConfigEvidenziato(CONFIG, 'committente')],
-    ['Sede', testoConfigEvidenziato(CONFIG, 'sedeCommittente')],
-    ['P.IVA e REA', ['P.IVA ', testoConfigEvidenziato(CONFIG, 'pivaCommittente'), ' – REA ', testoConfigEvidenziato(CONFIG, 'reaCommittente')]],
-  ].filter(Boolean);
+}
+
+// Scheda in testata: riepilogo in sola lettura di impianto e committente scelti
+// nella sezione 1; un campo vuoto compare come «DA COMPILARE».
+function aggiornaTestata() {
+  const voci = datiImpiantoCommittente(stato.dati, CONFIG);
+  const contenitore = $('dati-impianto');
+  const firma = JSON.stringify(voci);
+  if (contenitore.dataset.firma === firma) return;
+  contenitore.dataset.firma = firma;
   sostituisciFigli(
-    $('dati-impianto'),
-    voci.map(([etichetta, valore]) => h('div', {}, h('dt', {}, etichetta), h('dd', {}, valore))),
+    contenitore,
+    voci.map((v) => h('div', {}, h('dt', {}, v.etichetta), h('dd', {}, v.mancante ? h('span', { classe: 'da-compilare' }, v.valore) : v.valore))),
   );
 }
 
@@ -482,6 +482,7 @@ function aggiornaDerivati() {
   const testoRevisione = descriviRevisione(dati.revisione, revisione, improntaAttuale);
   $('codice-rapporto').textContent = codice;
   $('revisione-rapporto').textContent = testoRevisione;
+  aggiornaTestata();
   if ($('s1-codice')) $('s1-codice').textContent = codice;
   if ($('s1-revisione')) $('s1-revisione').textContent = testoRevisione;
 
@@ -518,16 +519,19 @@ function aggiornaMessaggiInLinea(esito) {
     if (!errori.has(e.percorso)) errori.set(e.percorso, []);
     errori.get(e.percorso).push(breve(e.messaggio));
   }
+  // i campi con controllo immediato (es. potenza) mostrano l'errore anche prima di «Verifica»
+  const subito = new Set(Array.from(document.querySelectorAll('[data-errore-subito]')).map((p) => p.dataset.errorePer));
+  const mostra = (percorso) => (stato.mostraErrori || subito.has(percorso)) && errori.has(percorso);
   document.querySelectorAll('[data-errore-per]').forEach((p) => {
-    const elenco = stato.mostraErrori ? errori.get(p.dataset.errorePer) : null;
+    const elenco = mostra(p.dataset.errorePer) ? errori.get(p.dataset.errorePer) : null;
     p.hidden = !elenco;
     p.textContent = elenco ? elenco.join(' · ') : '';
   });
   document.querySelectorAll('[data-campo]').forEach((c) => {
-    c.classList.toggle('con-errore', stato.mostraErrori && errori.has(c.dataset.campo));
+    c.classList.toggle('con-errore', mostra(c.dataset.campo));
   });
   document.querySelectorAll('[data-percorso]').forEach((el) => {
-    if (stato.mostraErrori && errori.has(el.dataset.percorso)) el.setAttribute('aria-invalid', 'true');
+    if (mostra(el.dataset.percorso)) el.setAttribute('aria-invalid', 'true');
     else el.removeAttribute('aria-invalid');
   });
   const avvisi = new Map(esito.avvisi.map((a) => [a.percorso, a.messaggio]));
@@ -574,7 +578,7 @@ function aggiornaOpzioniDinamiche() {
     if (sel.dataset.firmaOpzioni === firma) return;
     sel.dataset.firmaOpzioni = firma;
     const valore = risolviPercorso(stato.dati, sel.dataset.percorso) || '';
-    const vuota = sel.options[0] ? sel.options[0].textContent : '— Scegli —';
+    const vuota = sel.options[0] ? sel.options[0].textContent : '— Seleziona —';
     sostituisciFigli(
       sel,
       h('option', { value: '' }, vuota),

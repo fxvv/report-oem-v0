@@ -7,6 +7,8 @@
 // - sezioni: per ogni sezione 1–13 lo stato e il numero di errori.
 // Ogni voce ha "percorso", il campo a cui portare il cursore dalla pagina.
 
+import { CONFIG } from './config.js';
+import { opzioniImpianti, opzioniTipologie, opzioniCommittenti, opzioniSedi, opzioniPartiteIva } from './anagrafica.js';
 import { verificaPartitaIva } from './piva.js';
 import { siglaValida, progressivoValido } from './codice.js';
 import { statoFirma } from './revisione.js';
@@ -44,9 +46,11 @@ import {
 const vuoto = (v) => (Array.isArray(v) ? v.length === 0 : String(v ?? '').trim() === '');
 
 export const MIN_CARATTERI_TESTO = 20;
+export const MESSAGGIO_POTENZA = 'Inserisci solo cifre, senza decimali né separatori';
 export const MAX_CARATTERI_OGGETTO = 120;
 
-export function valida(dati) {
+// config: anagrafica di impianti e committenti tra cui scegliere (predefinita: js/config.js).
+export function valida(dati, config = CONFIG) {
   const errori = [];
   const avvisi = [];
   const errore = (sezione, percorso, messaggio) => errori.push({ sezione, percorso, messaggio });
@@ -161,6 +165,23 @@ export function valida(dati) {
     s1.ticket.forEach((t, i) => {
       if (vuoto(t.testo)) errore(1, `s1.ticket.${t.id}.testo`, `Ticket ${i + 1}: scrivi il riferimento oppure elimina la riga`);
     });
+
+    // Impianto e committente: menu da scegliere in modo esplicito, potenza
+    // facoltativa (numero intero), coordinate in qualsiasi formato.
+    const imp = s1.impianto;
+    scelta(1, 's1.impianto.codice', imp.codice, opzioniImpianti(config).map((o) => o.valore), 'Impianto');
+    scelta(1, 's1.impianto.tipologia', imp.tipologia, opzioniTipologie(config), 'Tipologia');
+    const potenza = imp.potenzaKwp.trim();
+    if (potenza !== '') {
+      if (!/^\d+$/.test(potenza)) errore(1, 's1.impianto.potenzaKwp', `Potenza (kWp): ${MESSAGGIO_POTENZA}`);
+      else if (Number(potenza) <= 0) errore(1, 's1.impianto.potenzaKwp', 'Potenza (kWp): deve essere maggiore di 0');
+    }
+    obbligatorio(1, 's1.impianto.coordinate', imp.coordinate, 'Coordinate');
+    const com = s1.committente;
+    scelta(1, 's1.committente.nome', com.nome, opzioniCommittenti(config), 'Committente');
+    scelta(1, 's1.committente.sede', com.sede, opzioniSedi(config), 'Sede del committente');
+    scelta(1, 's1.committente.piva', com.piva, opzioniPartiteIva(config), 'P.IVA del committente');
+
     obbligatorio(1, 's1.fornitore.ragioneSociale', f.ragioneSociale, 'Fornitore – ragione sociale');
     if (f.estero) {
       obbligatorio(1, 's1.fornitore.piva', f.piva, 'Fornitore – identificativo fiscale');

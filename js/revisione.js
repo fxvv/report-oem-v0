@@ -35,6 +35,8 @@ export function jsonCanonico(valore) {
   return JSON.stringify(valore);
 }
 
+const senzaSeVuoto = (gruppo) => (gruppo && Object.values(gruppo).every((v) => v === '') ? undefined : gruppo);
+
 // Impronta del contenuto del rapporto. Restano fuori l'identificativo interno e lo
 // stato della revisione. Le foto contano tramite la loro impronta (calcolata
 // sull'immagine quando la foto viene aggiunta o importata).
@@ -46,6 +48,11 @@ export function improntaContenuto(dati, { conFirma }) {
     ...dati,
     id: undefined,
     revisione: undefined,
+    // Impianto e committente sono entrati nel modulo dopo la prima V0: finché sono
+    // del tutto vuoti restano fuori dall'impronta, così le bozze già firmate (o con
+    // un PDF valido) non cambiano firma né revisione solo per l'aggiornamento.
+    // Appena se ne compila uno, l'impronta cambia come per ogni altro campo.
+    s1: { ...dati.s1, impianto: senzaSeVuoto(dati.s1.impianto), committente: senzaSeVuoto(dati.s1.committente) },
     s13: {
       ...dati.s13,
       firma: conFirma

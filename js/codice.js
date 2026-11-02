@@ -1,7 +1,7 @@
 // Codice del rapporto: {codiceImpianto}-R-{AAAAMMGG}-{SIGLA}{NN}, es. EI9-R-20261029-AB01.
 // Modulo puro: non usa il browser, si testa con Node.
 
-import { CONFIG, haSegnaposto } from './config.js';
+import { haSegnaposto } from './config.js';
 
 export function siglaValida(sigla) {
   return /^[A-Z]{2}$/.test(String(sigla ?? ''));
@@ -21,9 +21,11 @@ export function codiceRapporto({ codiceImpianto, creatoIl, sigla, progressivo })
   return `${parteImpianto}-R-${parteData}-${parteSigla}${nn}`;
 }
 
-export function codiceDaDati(dati, config = CONFIG) {
+// Il codice dell'impianto è quello interno dell'impianto scelto nella sezione 1
+// (es. EI9 per FI01A2MEL); finché non è scelto il codice riporta XXX.
+export function codiceDaDati(dati) {
   return codiceRapporto({
-    codiceImpianto: config.codiceImpianto,
+    codiceImpianto: dati.s1.impianto.codice,
     creatoIl: dati.creatoIl,
     sigla: dati.s1.fornitore.sigla,
     progressivo: dati.progressivo,

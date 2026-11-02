@@ -38,9 +38,8 @@ test('intestazione su ogni pagina: titolo, codice, revisione, impianto, committe
 test('piè di pagina: dati del committente e data di generazione', () => {
   const { doc } = documento();
   const testo = testiPdf(doc.footer(1, 7)).join(' ');
-  assert.match(testo, /Via Giacomo Puccini 3, 20121 Milano \(MI\)/);
-  assert.match(testo, /P\.IVA 01776210765/);
-  assert.match(testo, /REA .*2055472/);
+  assert.match(testo, /ENERGY ITALIA 9 – Via Giacomo Puccini 3, 20121 Milano \(MI\) – P\.IVA 01776210765/);
+  assert.doesNotMatch(testo, /REA/);
   assert.match(testo, /Modulo V0 – generato il 29\/10\/2026 21:30/);
 });
 
@@ -56,7 +55,7 @@ test('prima pagina con il riepilogo, poi le sezioni dalla 2 alla 13 in ordine', 
   const testi = testiPdf(doc.content);
   const iRiepilogo = testi.indexOf('Riepilogo');
   assert.ok(iRiepilogo >= 0);
-  for (const voce of ['Tipologia impianto', 'Ubicazione', 'Coordinate (WGS84)', 'Committente', 'Fornitore', 'Compilatore', 'Periodo', 'Oggetto', 'Tipologie', 'Regime']) {
+  for (const voce of ['Impianto', 'Tipologia impianto', 'Coordinate', 'Committente', 'Fornitore', 'Compilatore', 'Periodo', 'Oggetto', 'Tipologie', 'Regime']) {
     assert.ok(testi.indexOf(voce) > iRiepilogo, voce);
   }
   assert.ok(testi.includes('dal 27/10/2026 al 28/10/2026'));
@@ -89,14 +88,12 @@ test('sezioni non applicabili e valori "Non applicabile"/"Non rilevato" stampati
   assert.ok(testi.includes('Non applicabile'));
 });
 
-test('configurazione incompleta: DA COMPILARE nel PDF', () => {
-  const { doc } = documento();
-  const testi = testiPdf(doc.content);
-  const iTipologia = testi.indexOf('Tipologia impianto');
-  assert.equal(testi[iTipologia + 1], 'DA COMPILARE');
-  const completo = documento({ config: { ...CONFIG, tipologiaImpianto: 'Fotovoltaico' } }).doc;
-  const t2 = testiPdf(completo.content);
-  assert.equal(t2[t2.indexOf('Tipologia impianto') + 1], 'Fotovoltaico');
+test('destinatario delle foto: DA COMPILARE finché in configurazione resta il segnaposto', () => {
+  const conSegnaposto = testiPdf(documento({ config: { ...CONFIG, destinatarioFoto: '«nome ed e-mail»' } }).doc.content).join('\n');
+  assert.match(conSegnaposto, /inviati a parte a: DA COMPILARE\./);
+  const completo = testiPdf(documento({ config: { ...CONFIG, destinatarioFoto: 'Ufficio tecnico – tecnico@example.com' } }).doc.content).join('\n');
+  assert.match(completo, /inviati a parte a: Ufficio tecnico – tecnico@example\.com\./);
+  assert.doesNotMatch(completo, /DA COMPILARE/);
 });
 
 test('foto: riferimenti nelle tabelle e allegato fotografico con una foto per pagina', () => {

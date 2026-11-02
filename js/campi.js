@@ -10,8 +10,10 @@ export const idDa = (percorso, suffisso = '') => `c-${percorso.replace(/[^A-Za-z
 
 const asterisco = (obbligatorio) => (obbligatorio ? h('span', { classe: 'obbl', title: 'Obbligatorio' }, ' *') : null);
 
-export function erroreDi(percorso) {
-  return h('p', { classe: 'errore', id: idDa(percorso, '-errore'), dataset: { errorePer: percorso }, hidden: true });
+// subito: l'errore si mostra mentre si scrive, senza aspettare «Verifica»
+// (serve ai controlli di formato immediati, come la potenza).
+export function erroreDi(percorso, subito = false) {
+  return h('p', { classe: 'errore', id: idDa(percorso, '-errore'), dataset: { errorePer: percorso, erroreSubito: subito }, hidden: true });
 }
 
 export function avvisoDi(percorso) {
@@ -22,7 +24,7 @@ export function avvisoDi(percorso) {
 export function creaCampi(dati, contesto = {}) {
   const valore = (percorso) => risolviPercorso(dati, percorso);
 
-  function campo(percorso, etichetta, controllo, { obbligatorio, aiuto, classe = '', idControllo, dopo } = {}) {
+  function campo(percorso, etichetta, controllo, { obbligatorio, aiuto, classe = '', idControllo, dopo, erroreSubito } = {}) {
     return h(
       'div',
       { classe: `campo ${classe}`, dataset: { campo: percorso } },
@@ -30,7 +32,7 @@ export function creaCampi(dati, contesto = {}) {
       controllo,
       dopo,
       aiuto ? h('p', { classe: 'aiuto' }, aiuto) : null,
-      erroreDi(percorso),
+      erroreDi(percorso, erroreSubito),
     );
   }
 
@@ -165,7 +167,7 @@ export function creaCampi(dati, contesto = {}) {
     const select = h(
       'select',
       { ...attributiBase(percorso, o.obbligatorio), dataset: { percorso, opzioni: o.dinamiche }, value: corrente },
-      h('option', { value: '' }, o.vuota || '— Scegli —'),
+      h('option', { value: '' }, o.vuota || '— Seleziona —'),
       voci.map((v) => h('option', { value: v.valore }, v.testo)),
     );
     return campo(percorso, etichetta, select, o);

@@ -3,6 +3,7 @@
 // il browser. La generazione vera e propria è in pdf.js.
 
 import { CONFIG, testoConfig } from './config.js';
+import { datiImpiantoCommittente } from './anagrafica.js';
 import { codiceDaDati } from './codice.js';
 import {
   dataIt,
@@ -175,8 +176,12 @@ export function didascaliaFoto(voce) {
 // - immagini: { idFoto: dataURL JPEG } delle foto da stampare;
 // - firmaValida: true se la firma grafica è valida (non decaduta).
 export function creaDocumentoPdf(dati, { config = CONFIG, revisione = 0, bozza = false, generatoIl = new Date(), immagini = {}, firmaValida = false } = {}) {
-  const codice = codiceDaDati(dati, config);
+  const codice = codiceDaDati(dati);
   const cfg = (chiave) => testoConfig(config, chiave);
+  // Impianto, Tipologia, Potenza, Coordinate, Committente, Sede, P.IVA, nell'ordine
+  // in cui compaiono nel PDF; un campo vuoto è stampato "DA COMPILARE".
+  const anagrafica = datiImpiantoCommittente(dati, config);
+  const datoAnagrafica = (chiave) => anagrafica.find((v) => v.chiave === chiave).valore;
   const numeriFoto = mappaNumeriFoto(dati);
   const fotoStampate = elencoFoto(dati);
   const componenti = dati.s7.componenti;
@@ -204,21 +209,14 @@ export function creaDocumentoPdf(dati, { config = CONFIG, revisione = 0, bozza =
     ['Codice rapporto', codice],
     ['Revisione', `Rev. ${revisione}`],
     ['Ticket collegati', s1.ticket.map((x) => t(x.testo)).filter(Boolean).join(', ') || 'Nessuno'],
-    ['Impianto', `${cfg('codiceImpianto')} – ${cfg('nomeImpianto')}`],
-    ['Tipologia impianto', cfg('tipologiaImpianto')],
-  ];
-  if (cfg('potenzaKwp')) righeRiepilogo.push(['Potenza (kWp)', cfg('potenzaKwp')]);
-  righeRiepilogo.push(
-    ['Ubicazione', cfg('ubicazione')],
-    ['Coordinate (WGS84)', cfg('coordinate')],
-    ['Committente', `${cfg('committente')}\n${cfg('sedeCommittente')}\nP.IVA ${cfg('pivaCommittente')} – REA ${cfg('reaCommittente')}`],
+    ...anagrafica.map((v) => [v.etichetta, v.valore]),
     ['Fornitore', [t(f.ragioneSociale), `${f.estero ? 'Identificativo fiscale (fornitore estero)' : 'P.IVA'} ${t(f.piva)}`, t(f.sede), `Sigla ${t(f.sigla)}`].filter((x) => x.trim()).join('\n')],
     ['Compilatore', [unisci(c.nome, c.ruolo), unisci(c.email, c.telefono)].filter(Boolean).join('\n')],
     ['Periodo', testoPeriodo],
     ['Oggetto', s2.oggetto],
     ['Tipologie', testoScelteMultiple(s2.tipologie, s2.tipologiaAltro)],
     ['Regime', s2.regime],
-  );
+  ];
   contenuto.push(
     { text: 'RAPPORTO DI INTERVENTO', style: 'titolo' },
     { text: `${codice}   ·   Rev. ${revisione}`, style: 'codiceTitolo' },
@@ -589,7 +587,7 @@ export function creaDocumentoPdf(dati, { config = CONFIG, revisione = 0, bozza =
     });
   });
 
-  const testoCommittente = cfg('committente');
+  const testoCommittente = datoAnagrafica('committente');
   const generato = dataOraItDaDate(generatoIl);
 
   return {
@@ -611,7 +609,7 @@ export function creaDocumentoPdf(dati, { config = CONFIG, revisione = 0, bozza =
             { text: `Pagina ${pagina} di ${totalePagine}`, alignment: 'right', fontSize: 9, width: 100 },
           ],
         },
-        { text: `Impianto: ${cfg('codiceImpianto')} – ${cfg('nomeImpianto')}   ·   Committente: ${testoCommittente}`, fontSize: 8.5, color: COLORI.tenue, margin: [0, 2, 0, 0] },
+        { text: `Impianto: ${datoAnagrafica('impianto')}   ·   Committente: ${testoCommittente}`, fontSize: 8.5, color: COLORI.tenue, margin: [0, 2, 0, 0] },
         { canvas: [{ type: 'line', x1: 0, y1: 4, x2: LARGHEZZA_UTILE, y2: 4, lineWidth: 0.6, lineColor: COLORI.linea }] },
       ],
     }),
@@ -619,7 +617,7 @@ export function creaDocumentoPdf(dati, { config = CONFIG, revisione = 0, bozza =
       margin: [MARGINE, 2, MARGINE, 0],
       stack: [
         { canvas: [{ type: 'line', x1: 0, y1: 0, x2: LARGHEZZA_UTILE, y2: 0, lineWidth: 0.6, lineColor: COLORI.linea }] },
-        { text: `${testoCommittente} – ${cfg('sedeCommittente')} – P.IVA ${cfg('pivaCommittente')} – REA ${cfg('reaCommittente')}`, fontSize: 7.5, color: COLORI.tenue, margin: [0, 3, 0, 0] },
+        { text: `${testoCommittente} – ${datoAnagrafica('sede')} – P.IVA ${datoAnagrafica('piva')}`, fontSize: 7.5, color: COLORI.tenue, margin: [0, 3, 0, 0] },
         { text: `Modulo ${config.versioneModulo} – generato il ${generato}`, fontSize: 7.5, color: COLORI.tenue },
       ],
     }),

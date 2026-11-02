@@ -4,7 +4,7 @@ import { verificaPartitaIva, normalizzaPartitaIva, cifraControlloPartitaIva } fr
 import { CONFIG } from '../js/config.js';
 
 test('partite IVA valide', () => {
-  for (const piva of ['12345678903', '00000010009', CONFIG.pivaCommittente]) {
+  for (const piva of ['12345678903', '00000010009', ...CONFIG.committenti.map((c) => c.piva)]) {
     assert.equal(verificaPartitaIva(piva).valida, true, piva);
   }
 });
