@@ -41,24 +41,26 @@ poi apri `http://localhost:8000/`.
 
 ## Come modificare `js/config.js`
 
-`js/config.js` contiene i dati fissi dell'impianto e del committente, che il fornitore vede in sola lettura e che finiscono nel PDF:
+`js/config.js` contiene l'**anagrafica** da cui il fornitore sceglie impianto e committente nella sezione 1 «Identificazione», più pochi dati fissi:
 
 ```js
-export const CONFIG = Object.freeze({
-  codiceImpianto: 'EI9',
-  nomeImpianto: 'FI01A2MEL',
-  tipologiaImpianto: '«tipologia»',
-  potenzaKwp: '«potenza in kWp»', // facoltativa: '' per non indicarla
-  ...
+export const CONFIG = congela({
+  impianti: [{ codice: 'EI9', nome: 'FI01A2MEL' }],
+  committenti: [{ nome: 'ENERGY ITALIA 9', sede: 'Via Giacomo Puccini 3, 20121 Milano (MI)', piva: '01776210765' }],
+  tipologieImpianto: ['Fotovoltaico', 'Eolico'],
+  destinatarioFoto: '«nome ed e-mail»',
+  versioneModulo: 'V0',
 });
 ```
 
-- Sostituisci ogni testo tra `«»` con il valore reale (anche quando è solo una parte del valore, come `ENERGY ITALIA 9 «forma giuridica»`).
-- Finché un valore contiene `«…»` è considerato **mancante**: in cima alla pagina compare l'avviso rosso «Configurazione incompleta: …» e nel PDF quel dato è stampato come **DA COMPILARE**.
-- La potenza è facoltativa: se non serve, metti `''` (stringa vuota) e non comparirà né nella pagina né nel PDF.
-- Le coordinate sono in gradi decimali WGS84, per esempio `'45.464211, 9.191383'`.
-- Il codice impianto entra nel codice del rapporto (`EI9-R-AAAAMMGG-SIGLANN`).
+- **Aggiungere un impianto**: una riga in più in `impianti`, con il codice interno e il nome. Il nome compare nel menu «Impianto»; il codice entra nel codice del rapporto (`EI9-R-AAAAMMGG-SIGLANN`).
+- **Aggiungere un committente**: una riga in più in `committenti`, con nome, sede e partita IVA. I menu «Committente», «Sede» e «P.IVA» propongono tutti i valori dell'elenco; per ora sono indipendenti tra loro.
+- **Tipologie di impianto**: l'elenco `tipologieImpianto` è quello del menu «Tipologia».
+- **Destinatario delle foto e degli allegati**: compare nella sezione 13 e nel PDF. Il repository è pubblico: meglio un ruolo con una casella generica che il nome e l'e-mail di una persona.
+- Un valore che contiene ancora un testo tra `«»` (o è vuoto) è considerato **mancante**: in cima alla pagina compare l'avviso rosso «Configurazione incompleta: …» e nel PDF quel dato è stampato come **DA COMPILARE**. L'avviso riguarda solo i dati che restano in configurazione.
 - Dopo la modifica: commit su `main`; la pagina pubblicata si aggiorna in qualche minuto.
+
+Nel modulo i menu partono vuoti («— Seleziona —») anche quando hanno una sola voce: il fornitore deve scegliere in modo esplicito. Impianto, tipologia, coordinate, committente, sede e P.IVA sono obbligatori; la potenza (kWp, numero intero) è facoltativa. La scheda in alto nella pagina riepiloga i valori scelti e mostra «DA COMPILARE» per quelli mancanti.
 
 ## Struttura
 
@@ -66,7 +68,8 @@ export const CONFIG = Object.freeze({
 | --- | --- |
 | `index.html` | pagina unica |
 | `css/app.css` | stili mobile-first |
-| `js/config.js` | dati fissi dell'impianto (vedi sopra) |
+| `js/config.js` | anagrafica di impianti e committenti, dati fissi (vedi sopra) |
+| `js/anagrafica.js` | menu e testi di impianto e committente scelti nel modulo (logica pura) |
 | `js/modello.js` | struttura dei dati, valori ammessi, numerazione foto, totali (logica pura) |
 | `js/validazione.js` | regole di validazione per sezione, errori e avvisi (logica pura) |
 | `js/formati.js` | date, ore e decimali in italiano, codice EER, nomi dei file (logica pura) |
@@ -81,6 +84,7 @@ export const CONFIG = Object.freeze({
 | `js/pdf.js` | caricamento di pdfmake e download dei file |
 | `js/interfaccia.js`, `js/sezioni.js`, `js/campi.js`, `js/dialoghi.js`, `js/dom.js`, `js/app.js` | interfaccia |
 | `tests/` | test eseguibili con `node --test` |
+| `tests/dati/bozza-formato-1.json` | bozza esportata con la prima versione, per i test di compatibilità |
 | `esempi/bozza-esempio.json` | bozza completa con dati fittizi, da importare per vedere un PDF completo |
 | `esempi/immagini/` | immagini segnaposto e firma fittizia usate dalla bozza di esempio |
 | `strumenti/genera-bozza-esempio.js` | rigenera la bozza di esempio |
@@ -96,7 +100,7 @@ Con Node 18 o superiore, senza installare nulla:
 node --test
 ```
 
-I test coprono la logica pura: P.IVA, codice del rapporto, formati, revisione e decadenza della firma, modello dei dati, regole di validazione, esportazione/importazione, documento PDF, configurazione e bozza di esempio.
+I test coprono la logica pura: P.IVA, codice del rapporto, formati, revisione e decadenza della firma, modello dei dati, regole di validazione, impianto e committente, esportazione/importazione (anche delle bozze della prima versione), documento PDF, configurazione e bozza di esempio.
 
 Se cambiano il modello dei dati o il calcolo dell'impronta, la firma della bozza di esempio risulterebbe decaduta: rigenerala con
 
@@ -125,5 +129,7 @@ I file sono quelli del pacchetto npm `pdfmake@0.3.13` (cartella `build/`), non m
 - **Impronta dei dati**: serve a riconoscere le modifiche (revisione, decadenza della firma), non è una protezione crittografica contro le alterazioni.
 - **Orari delle operazioni** nella stessa giornata: un'operazione che passa la mezzanotte va divisa in due.
 - **iPhone, valori negativi**: la tastiera decimale non ha il segno meno; per le misure c'è il pulsante «±».
+- **Menu di impianto e committente indipendenti**: scegliendo il committente, sede e P.IVA non si compilano da sole e non viene controllato che appartengano allo stesso committente.
+- **Bozze della prima versione**: si aprono con impianto e committente vuoti e il codice del rapporto mostra `XXX` al posto del codice impianto finché l'impianto non è scelto. La firma e la revisione restano valide finché questi campi sono vuoti; compilandoli, come per ogni altra modifica, bisogna firmare di nuovo e il PDF valido successivo prende la revisione seguente.
 - I controlli nativi di data e ora mostrano il formato del dispositivo; nel PDF le date sono sempre gg/mm/aaaa e le ore hh:mm.
 - Il collaudo automatico è stato fatto su Chromium; Safari su iPhone e Chrome su Android vanno verificati con [TEST.md](TEST.md).
