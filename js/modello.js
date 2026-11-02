@@ -291,6 +291,8 @@ export function normalizzaBozza(grezzo, genera = generaId) {
   const s5 = oggetto(g.s5), s6 = oggetto(g.s6), s7 = oggetto(g.s7), s8 = oggetto(g.s8);
   const s9 = oggetto(g.s9), s10 = oggetto(g.s10), s11 = oggetto(g.s11), s12 = oggetto(g.s12);
   const s13 = oggetto(g.s13);
+  const impianto = oggetto(s1.impianto);
+  const committente = oggetto(s1.committente);
   const fornitore = oggetto(s1.fornitore);
   const compilatore = oggetto(s1.compilatore);
   const firma = oggetto(s13.firma);
@@ -306,6 +308,19 @@ export function normalizzaBozza(grezzo, genera = generaId) {
     },
     s1: {
       ticket: elenco(s1.ticket).map(R.ticket),
+      // Impianto e committente scelti dal fornitore (le bozze della prima V0 non li
+      // hanno: si aprono con questi campi vuoti). Il codice è quello interno dell'impianto.
+      impianto: {
+        codice: testo(impianto.codice),
+        tipologia: testo(impianto.tipologia),
+        potenzaKwp: testo(impianto.potenzaKwp),
+        coordinate: testo(impianto.coordinate),
+      },
+      committente: {
+        nome: testo(committente.nome),
+        sede: testo(committente.sede),
+        piva: testo(committente.piva),
+      },
       fornitore: {
         ragioneSociale: testo(fornitore.ragioneSociale),
         estero: booleano(fornitore.estero),

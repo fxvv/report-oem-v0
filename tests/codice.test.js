@@ -35,7 +35,8 @@ test('sigla: esattamente 2 lettere maiuscole', () => {
 test('la data del codice è quella di creazione della bozza e non cambia', () => {
   const bozza = nuovaBozza(new Date(2026, 9, 29, 23, 50));
   bozza.s1.fornitore.sigla = 'AB';
-  assert.equal(codiceDaDati(bozza), `${CONFIG.codiceImpianto}-R-20261029-AB01`);
+  bozza.s1.impianto.codice = CONFIG.impianti[0].codice;
+  assert.equal(codiceDaDati(bozza), 'EI9-R-20261029-AB01');
   // dopo giorni il codice resta lo stesso: dipende solo da creatoIl
   const copia = JSON.parse(JSON.stringify(bozza));
   assert.equal(codiceDaDati(copia), codiceDaDati(bozza));
@@ -43,4 +44,12 @@ test('la data del codice è quella di creazione della bozza e non cambia', () =>
 
 test('codice impianto con segnaposto: XXX', () => {
   assert.equal(codiceRapporto({ codiceImpianto: '«codice»', creatoIl: '2026-10-29', sigla: 'AB', progressivo: '01' }), 'XXX-R-20261029-AB01');
+});
+
+test("il codice usa il codice interno dell'impianto scelto; finché non è scelto riporta XXX", () => {
+  const bozza = nuovaBozza(new Date(2026, 9, 30));
+  bozza.s1.fornitore.sigla = 'AB';
+  assert.equal(codiceDaDati(bozza), 'XXX-R-20261030-AB01');
+  bozza.s1.impianto.codice = 'EI9'; // impianto FI01A2MEL nel menu
+  assert.equal(codiceDaDati(bozza), 'EI9-R-20261030-AB01');
 });

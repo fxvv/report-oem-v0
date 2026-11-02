@@ -4,7 +4,8 @@
 
 import { h } from './dom.js';
 import { creaCampi, erroreDi, avvisoDi } from './campi.js';
-import { ETICHETTE_CONFIG, partiConfig } from './config.js';
+import { partiConfig } from './config.js';
+import { opzioniImpianti, opzioniTipologie, opzioniCommittenti, opzioniSedi, opzioniPartiteIva } from './anagrafica.js';
 import { DICHIARAZIONE } from './pdf-documento.js';
 import {
   OPZIONI,
@@ -45,17 +46,6 @@ const nonApplicabile = () => h('p', { classe: 'nota-na' }, 'Sezione non applicab
 const gruppo = (titolo, ...figli) => h('div', { classe: 'gruppo' }, titolo ? h('h3', {}, titolo) : null, ...figli);
 const affiancati = (...figli) => h('div', { classe: 'affiancati' }, ...figli);
 
-function datiConfigurazione(config) {
-  const chiavi = ['codiceImpianto', 'nomeImpianto', 'tipologiaImpianto', 'potenzaKwp', 'ubicazione', 'coordinate', 'committente', 'sedeCommittente', 'pivaCommittente', 'reaCommittente'];
-  return h(
-    'dl',
-    { classe: 'dati-config' },
-    chiavi
-      .filter((k) => !(k === 'potenzaKwp' && String(config[k] || '').trim() === ''))
-      .map((k) => h('div', {}, h('dt', {}, ETICHETTE_CONFIG[k]), h('dd', {}, testoConfigEvidenziato(config, k)))),
-  );
-}
-
 // --- 1. Identificazione
 function sezione1({ C, dati, config }) {
   const f = dati.s1.fornitore;
@@ -80,7 +70,25 @@ function sezione1({ C, dati, config }) {
       testoAggiungi: 'Aggiungi ticket',
       riga: (t) => C.testo(`s1.ticket.${t.id}.testo`, 'Riferimento del ticket', { obbligatorio: true }),
     }),
-    gruppo('Impianto e committente', h('p', { classe: 'aiuto' }, 'Dati fissi della configurazione: non si modificano da qui.'), datiConfigurazione(config)),
+    // Le opzioni dei menu vengono dall'anagrafica in config.js; i menu partono
+    // vuoti anche con una sola opzione, perché la scelta sia esplicita.
+    gruppo(
+      'Impianto e committente',
+      C.tendina('s1.impianto.codice', 'Impianto', opzioniImpianti(config), { obbligatorio: true }),
+      C.tendina('s1.impianto.tipologia', 'Tipologia', opzioniTipologie(config), { obbligatorio: true }),
+      C.testo('s1.impianto.potenzaKwp', 'Potenza (kWp)', {
+        inputmode: 'numeric',
+        aiuto: 'Facoltativa. Solo cifre, senza decimali né separatori.',
+        erroreSubito: true,
+      }),
+      C.testo('s1.impianto.coordinate', 'Coordinate', {
+        obbligatorio: true,
+        aiuto: 'In qualsiasi formato, per esempio 45.464211, 9.191383 oppure 45°27\'51"N 9°11\'25"E: nel PDF compaiono come scritte.',
+      }),
+      C.tendina('s1.committente.nome', 'Committente', opzioniCommittenti(config), { obbligatorio: true }),
+      C.tendina('s1.committente.sede', 'Sede', opzioniSedi(config), { obbligatorio: true }),
+      C.tendina('s1.committente.piva', 'P.IVA', opzioniPartiteIva(config), { obbligatorio: true }),
+    ),
     gruppo(
       'Fornitore',
       C.testo('s1.fornitore.ragioneSociale', 'Ragione sociale', { obbligatorio: true, autocomplete: 'organization' }),

@@ -10,6 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { CONFIG } from '../js/config.js';
 import { normalizzaBozza } from '../js/modello.js';
 import { impronta, improntaContenuto } from '../js/revisione.js';
 import { creaFileBozza } from '../js/bozza.js';
@@ -38,6 +39,10 @@ const foto = (id, didascalia, nomeOriginale, verticale = false) => ({
 });
 
 const FORNITORE = 'Esempio Manutenzioni Elettriche S.r.l.';
+// Impianto e committente dall'anagrafica di config.js. La potenza resta vuota
+// (è facoltativa) e le coordinate sono di esempio: non sono quelle dell'impianto.
+const IMPIANTO = CONFIG.impianti[0];
+const COMMITTENTE = CONFIG.committenti[0];
 
 const grezzo = {
   id: 'bozzaesempio0001',
@@ -46,6 +51,13 @@ const grezzo = {
   revisione: { numero: null, impronta: '', generatoIl: '' },
   s1: {
     ticket: [{ id: 'ticket-1', testo: 'TCK-2026-0001 (esempio)' }],
+    impianto: {
+      codice: IMPIANTO.codice,
+      tipologia: 'Fotovoltaico',
+      potenzaKwp: '',
+      coordinate: '45°00\'00"N 9°00\'00"E (coordinate di esempio)',
+    },
+    committente: { nome: COMMITTENTE.nome, sede: COMMITTENTE.sede, piva: COMMITTENTE.piva },
     fornitore: {
       ragioneSociale: FORNITORE,
       estero: false,

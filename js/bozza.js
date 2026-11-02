@@ -7,7 +7,10 @@ import { normalizzaBozza, tutteLeFoto, generaId } from './modello.js';
 import { impronta } from './revisione.js';
 
 export const FORMATO_BOZZA = 'rapporto-intervento-bozza';
-export const VERSIONE_FORMATO_BOZZA = 1;
+// 1: prima V0 (impianto e committente fissi in config.js);
+// 2: impianto e committente scelti nel modulo. Le bozze del formato 1 si aprono
+//    con questi campi vuoti; le versioni precedenti della pagina rifiutano il 2.
+export const VERSIONE_FORMATO_BOZZA = 2;
 
 const RE_IMMAGINE = /^data:image\/(jpeg|png);base64,[A-Za-z0-9+/]+={0,2}$/;
 const RE_MINIATURA = /^data:image\/(jpeg|png);base64,/;

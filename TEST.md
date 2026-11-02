@@ -17,7 +17,7 @@ Preparazione: tenere sul telefono una ventina di foto di prova (alcune scattate 
 | # | Passo | Esito atteso | iPhone | Android | Note |
 | --- | --- | --- | --- | --- | --- |
 | 1.1 | Aprire il link (anche da e-mail o messaggio). | La pagina si apre senza errori; in alto codice del rapporto, revisione, dati dell'impianto e del committente. | ☐ | ☐ | |
-| 1.2 | Guardare l'avviso in cima. | Se la configurazione ha valori tra «», compare l'avviso rosso «Configurazione incompleta: …». | ☐ | ☐ | |
+| 1.2 | Guardare l'avviso in cima. | Compare l'avviso rosso «Configurazione incompleta: …» solo se in `js/config.js` restano valori tra «» (oggi può riguardare solo il destinatario delle foto); non cita mai impianto, tipologia, potenza, coordinate, committente, sede o P.IVA. | ☐ | ☐ | |
 | 1.3 | Scorrere tutta la pagina in verticale, con le sezioni aperte. | Nessuno scorrimento orizzontale; testi e pulsanti leggibili; pulsanti facili da toccare. | ☐ | ☐ | |
 | 1.4 | Aprire e chiudere le 13 sezioni. | Ogni intestazione mostra «Completa», «Da completare (N)» o «Non applicabile». | ☐ | ☐ | |
 | 1.5 | Compilare tutte le sezioni (persone, operazioni, componenti, misure…), aggiungendo ed eliminando righe. | Le righe sono schede; l'eliminazione chiede conferma; nei campi numerici si può usare la virgola. | ☐ | ☐ | |
@@ -74,7 +74,8 @@ Preparazione: tenere sul telefono una ventina di foto di prova (alcune scattate 
 | 6.4 | Scaricare il PDF e aprirlo. | Nome `{codice} rev0 - {oggetto}.pdf`; prima pagina con il riepilogo; sezioni 2–13 in ordine; intestazione e piè di pagina su ogni pagina con «Pagina X di Y»; firma con nome, ruolo, data e ora; allegato fotografico. | ☐ | ☐ | |
 | 6.5 | Riscaricare il PDF senza modificare nulla. | Stessa revisione (rev0). | ☐ | ☐ | |
 | 6.6 | Modificare un dato, firmare di nuovo, scaricare il PDF. | Revisione aumentata (rev1). | ☐ | ☐ | |
-| 6.7 | Se la configurazione è incompleta, cercare i dati dell'impianto nel PDF. | I valori mancanti sono stampati come «DA COMPILARE». | ☐ | ☐ | |
+| 6.7 | Se il destinatario delle foto in configurazione è ancora tra «», cercarlo nel PDF (sezione 13). | È stampato come «DA COMPILARE». | ☐ | ☐ | |
+| 6.8 | Nella prima pagina del PDF valido cercare i dati di impianto e committente. | Compaiono di seguito in quest'ordine: Impianto, Tipologia, Potenza, Coordinate, Committente, Sede, P.IVA; non ci sono ubicazione, REA né forma giuridica; le coordinate sono identiche a come scritte. | ☐ | ☐ | |
 
 ## 7. Esportazione e importazione della bozza tra telefono e PC
 
@@ -110,6 +111,21 @@ Preparazione: tenere sul telefono una ventina di foto di prova (alcune scattate 
 | 10.1 | Con il rapporto firmato, modificare un campo qualsiasi (anche nome o ruolo del firmatario). | Compare «I dati sono cambiati dopo la firma: firma di nuovo», in cima alla pagina e nella sezione 13. | ☐ | ☐ | |
 | 10.2 | Premere «Verifica». | La firma è segnalata come mancante. | ☐ | ☐ | |
 | 10.3 | Firmare di nuovo. | L'avviso sparisce e il pulsante torna «Scarica PDF». | ☐ | ☐ | |
+
+## 11. Impianto e committente nella sezione 1
+
+| # | Passo | Esito atteso | iPhone | Android | Note |
+| --- | --- | --- | --- | --- | --- |
+| 11.1 | Aprire un rapporto nuovo e guardare la scheda in alto. | Impianto, Tipologia, Coordinate, Committente, Sede e P.IVA risultano «DA COMPILARE» (in rosso); la potenza «Non indicata». Il codice del rapporto inizia con `XXX-R-` finché l'impianto non è scelto. | ☐ | ☐ | |
+| 11.2 | Sezione 1, gruppo «Impianto e committente»: aprire i menu. | Partono vuoti con «— Seleziona —». Impianto: solo «FI01A2MEL»; Tipologia: «Fotovoltaico», «Eolico»; Committente: «ENERGY ITALIA 9»; Sede: «Via Giacomo Puccini 3, 20121 Milano (MI)»; P.IVA: «01776210765». Tutti con *. | ☐ | ☐ | |
+| 11.3 | Toccare il campo Potenza (kWp). | Si apre la tastiera numerica; il campo non ha *. | ☐ | ☐ | |
+| 11.4 | Scrivere `998,5`, poi `1.000`. | Subito, senza premere «Verifica»: «Inserisci solo cifre, senza decimali né separatori». | ☐ | ☐ | |
+| 11.5 | Scrivere `998`. | Il messaggio sparisce. | ☐ | ☐ | |
+| 11.6 | Nelle coordinate scrivere un formato in gradi-primi-secondi (es. `45°27'51"N 9°11'25"E`), poi un formato decimale. | Entrambi accettati, senza messaggi di formato. | ☐ | ☐ | |
+| 11.7 | Lasciare vuoto un menu e premere «Verifica». | Il campo è nell'elenco della sezione 1; il pulsante in basso offre solo «Scarica bozza PDF». | ☐ | ☐ | |
+| 11.8 | Scegliere tutte le voci. | La scheda in alto mostra i valori scelti; il codice del rapporto inizia con `EI9-R-`. | ☐ | ☐ | |
+| 11.9 | Con il rapporto firmato, cambiare la tipologia. | Compare «I dati sono cambiati dopo la firma: firma di nuovo». | ☐ | ☐ | |
+| 11.10 | Aprire su questo telefono una bozza salvata con la versione precedente (o importare un file di bozza esportato prima dell'aggiornamento). | Si apre senza errori; i nuovi campi sono vuoti e richiesti da «Verifica»; firma e revisione restano quelle di prima finché non si compilano. | ☐ | ☐ | |
 
 ## Esito complessivo
 
